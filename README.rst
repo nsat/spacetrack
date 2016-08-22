@@ -8,17 +8,24 @@ spacetrack is a python module for `Space-Track <https://www.space-track.org>`__
 Installation
 ~~~~~~~~~~~~
 
+First, make an account on https://www.space-track.org/.
+You'll need to authenticate to use the API.
+
 .. code:: bash
 
-    $ pip install spacetrack
+    $ python setup.py install
+    $ export SPACETRACK_USER=<email used to make account>
+    $ export SPACETRACK_PASS=<password from above>
 
 Example
 ~~~~~~~
 
 .. code:: python
 
+   >>> import os
+   >>> import datetime as dt
    >>> from spacetrack import SpaceTrackClient
-   >>> st = SpaceTrackClient('identity', 'password')
+   >>> st = SpaceTrackClient(os.environ['SPACETRACK_USER'], os.environ['SPACETRACK_PASS'])
 
    >>> print(st.tle_latest(norad_cat_id=[25544, 41335], ordinal=1, format='tle'))
    1 25544U 98067A   16179.00000000  .00000000  00000-0  00000-0 0  0000
@@ -26,26 +33,11 @@ Example
    1 41335U 16011A   16179.00000000  .00000000  00000-0  00000-0 0  0000
    2 41335  00.0000   0.0000 0000000  00.0000 000.0000 00.00000000  0000
 
-   >>> # Operators, to save manual string formatting.
-   >>> import spacetrack.operators as op
-   >>> drange = op.inclusive_range(dt.datetime(2016, 6, 26),
-   ...                             dt.datetime(2016, 6, 27))
+   >>> # Retrieve TLEs after a certain date
+   >> print(st.tle(norad_cat_id=[25544], format='json', epoch='>2016-08-16'))
 
-   >>> # Streaming downloads line by line
-   >>> lines = st.tle(iter_lines=True, publish_epoch=drange, orderby='TLE_LINE1', format='tle')
-   >>> with open('tle.txt', 'w') as fp:
-   ...     for line in lines:
-   ...         fp.write(line)
-
-   # Streaming downloads in chunk (note file is opened in binary mode)
-   >>> content = st.download(iter_content=True, file_id=..., format='stream')
-   >>> with open('file.txt', 'wb') as fp:
-   ...     for chunk in content:
-   ...         fp.write(chunk)
-
-   >>> # Parameter checking, using Space-Track's modeldef API
-   >>> st.tle_latest(onrad_cat_id=25544)
-   TypeError: 'tle_latest' got an unexpected argument 'onrad_cat_id'
+   >>> # Retrieve TLEs between certain dates
+   >> print(st.tle(norad_cat_id=[25544], format='json', epoch='2016-08-16--2016-08-19'))
 
    >>> # Automatic rate limiting
    >>> for satno in my_satnos:
